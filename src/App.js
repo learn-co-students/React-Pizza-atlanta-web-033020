@@ -56,10 +56,13 @@ class App extends Component {
       body: JSON.stringify(pizzaObj)
     })
     .then(res => res.json())
-    .then(pizza => {
+    .then(pizzaData => {
       let pizzasCopy = [...this.state.pizzas]
-      let index = pizzasCopy.findIndex(p => p.id === id)
-      pizzasCopy.splice(index, 1, pizza)
+      pizzasCopy = pizzasCopy.map(pizza => {
+        if (pizza.id !== id) {
+          return pizza
+        } else { return pizzaData }
+      })
       this.setState({pizzas: pizzasCopy})
     })
   }
