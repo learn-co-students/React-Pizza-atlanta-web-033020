@@ -5,7 +5,11 @@ import PizzaList from './containers/PizzaList'
 class App extends Component {
   state = {
     pizzas: [],
-    editPizza: {}
+    pizzaToEdit: {},
+    editPizzaId: '',
+    editTopping: '',
+    editSize: '',
+    editVegetarian: ''
   }
 
   componentDidMount() {
@@ -14,23 +18,47 @@ class App extends Component {
     .then(pizzas => this.setState({pizzas: pizzas}))
   }
 
-  editPizza = (pizza) => {
-    this.setState({editPizza: pizza})
+  handleToppingChange = event => {
+    this.setState({editTopping: event})
   }
 
-  submitPizzaEdit = (pizza) => {
-    fetch(`http://localhost:3000/pizzas/${pizza.id}`, {
+  handleSizeChange = event => {
+    this.setState({editSize: event})
+  }
+
+  handleVegetarianChange = event => {
+    if (event === 'Vegetarian') {
+      this.setState({ editVegetarian: true })
+    } else {
+      this.setState({ editVegetarian: false })
+    }
+  }
+  editPizza = (pizza) => {
+    this.setState({
+      editPizzaId: pizza.id,
+      editTopping: pizza.topping,
+      editSize: pizza.size,
+      editVegetarian: pizza.vegetarian
+    })
+  }
+
+  submitPizzaEdit = (pizzaDetails, id) => {
+    let pizzaObj = {
+        topping: pizzaDetails.topping,
+        size: pizzaDetails.size,
+        vegetarian: pizzaDetails.vegetarian
+    }
+    fetch(`http://localhost:3000/pizzas/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-type': 'application/json'
       },
-      body: JSON.stringify(pizza)
+      body: JSON.stringify(pizzaObj)
     })
     .then(res => res.json())
     .then(pizza => {
-      console.log(pizza)
       let pizzasCopy = [...this.state.pizzas]
-      let index = pizzasCopy.findIndex(p => p.id === pizza.id)
+      let index = pizzasCopy.findIndex(p => p.id === id)
       pizzasCopy.splice(index, 1, pizza)
       this.setState({pizzas: pizzasCopy})
     })
@@ -40,11 +68,19 @@ class App extends Component {
     return (
       <Fragment>
         <Header/>
-        <PizzaForm editPizza={this.state.editPizza} />
+        <PizzaForm
+          id={this.state.editPizzaId}
+          topping={this.state.editTopping}  
+          size={this.state.editSize} 
+          vegetarian={this.state.editVegetarian} 
+          handleToppingChange={this.handleToppingChange}
+          handleSizeChange={this.handleSizeChange}
+          handleVegetarianChange={this.handleVegetarianChange}
+          submitPizzaEdit={this.submitPizzaEdit}
+        />
         <PizzaList 
           pizzas={this.state.pizzas} 
           editPizza={this.editPizza} 
-          submitPizzaEdit={this.submitPizzaEdit}
         />
       </Fragment>
     );
